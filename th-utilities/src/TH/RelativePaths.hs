@@ -13,7 +13,7 @@
 -- TH via 'location'. It then searches upwards in the directory tree for
 -- a .cabal file, and makes the provided path relative to the folder
 -- it's in.
-module Language.Haskell.TH.RelativePaths where
+module TH.RelativePaths where
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
@@ -30,8 +30,8 @@ import           System.FilePath
 -- | Reads a file as a strict ByteString. The path is specified relative
 -- to the package's root directory, and 'addDependentfile' is invoked on
 -- the target file.
-readFileBS :: FilePath -> Q BS.ByteString
-readFileBS fp = do
+qReadFileBS :: FilePath -> Q BS.ByteString
+qReadFileBS fp = do
     fp' <- pathRelativeToCabalPackage fp
     addDependentFile fp'
     runIO $ BS.readFile fp'
@@ -39,8 +39,8 @@ readFileBS fp = do
 -- | Reads a file as a lazy ByteString. The path is specified relative
 -- to the package's root directory, and 'addDependentfile' is invoked on
 -- the target file.
-readFileLBS :: FilePath -> Q LBS.ByteString
-readFileLBS fp = do
+qReadFileLBS :: FilePath -> Q LBS.ByteString
+qReadFileLBS fp = do
     fp' <- pathRelativeToCabalPackage fp
     addDependentFile fp'
     runIO $ LBS.readFile fp'
@@ -48,8 +48,8 @@ readFileLBS fp = do
 -- | Reads a file as a strict Text. The path is specified relative
 -- to the package's root directory, and 'addDependentfile' is invoked on
 -- the target file.
-readFileText :: FilePath -> Q T.Text
-readFileText fp = do
+qReadFileText :: FilePath -> Q T.Text
+qReadFileText fp = do
     fp' <- pathRelativeToCabalPackage fp
     addDependentFile fp'
     runIO $ T.readFile fp'
@@ -57,8 +57,8 @@ readFileText fp = do
 -- | Reads a file as a lazy Text. The path is specified relative
 -- to the package's root directory, and 'addDependentfile' is invoked on
 -- the target file.
-readFileLazyText :: FilePath -> Q LT.Text
-readFileLazyText fp = do
+qReadFileLazyText :: FilePath -> Q LT.Text
+qReadFileLazyText fp = do
     fp' <- pathRelativeToCabalPackage fp
     addDependentFile fp'
     runIO $ LT.readFile fp'
@@ -66,8 +66,8 @@ readFileLazyText fp = do
 -- | Reads a file as a String. The path is specified relative
 -- to the package's root directory, and 'addDependentfile' is invoked on
 -- the target file.
-readFileString :: FilePath -> Q String
-readFileString fp = do
+qReadFileString :: FilePath -> Q String
+qReadFileString fp = do
     fp' <- pathRelativeToCabalPackage fp
     addDependentFile fp'
     runIO $ readFile fp'

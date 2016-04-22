@@ -2,7 +2,6 @@ resolver: lts-5.13
 packages:
 - th-orphans
 - th-reify-many
-- th-relative-paths
 # - th-simple
 - th-storable
-# - th-utilities
+- th-utilities
