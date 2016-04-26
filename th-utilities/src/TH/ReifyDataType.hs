@@ -13,13 +13,23 @@ import TH.Utilities
 
 -- | Simplified info about a 'DataD'. Omits deriving, strictness, and
 -- kind info.
-data DataType = DataType Name [Name] Cxt [DataCon]
+data DataType = DataType
+    { dtName :: Name
+    , dtTvs :: [Name]
+    , dtCxt :: Cxt
+    , dtCons :: [DataCon]
+    }
     deriving (Eq, Show, Ord, Data, Typeable, Generic)
 
 -- | Simplified info about a 'Con'. Omits strictness, and kind info.
 -- This is much nicer than consuming 'Con' directly, because it unifies
 -- all the constructors into one.
-data DataCon = DataCon Name [Name] Cxt [(Maybe Name, Type)]
+data DataCon = DataCon
+    { dcName :: Name
+    , dcTvs :: [Name]
+    , dcCxt :: Cxt
+    , dcFields :: [(Maybe Name, Type)]
+    }
     deriving (Eq, Show, Ord, Data, Typeable, Generic)
 
 reifyDataType :: Name -> Q DataType
