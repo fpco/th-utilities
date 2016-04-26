@@ -69,6 +69,8 @@ makeStorable cxt headTy cons = do
             ]
     return [InstanceD cxt headTy methods]
   where
+    -- NOTE: Much of the code here resembles code in store for deriving
+    -- Store instances. Changes here may be relevant there as well.
     (tagType, _, tagSize) =
         fromMaybe (error "Too many constructors") $
         find (\(_, maxN, _) -> maxN >= length cons) tagTypes
@@ -96,13 +98,15 @@ makeStorable cxt headTy cons = do
     -- Expression used for the definition of peek.
     peekExpr = case cons of
         [] -> [| error ("Attempting to peek type with no constructors (" ++ $(lift (show headTy)) ++ ")") |]
-        [constr] -> peekConstr constr
+        [con] -> peekCon con
         _ -> doE
             [ bindS (varP tagName) [| peek (castPtr $(ptrExpr)) |]
-            , noBindS (caseE (sigE (varE tagName) (conT tagType)) (map peekMatch (zip [0..] cons)))
+            , noBindS (caseE (sigE (varE tagName) (conT tagType))
+                             (map peekMatch (zip [0..] cons) ++ [peekErr]))
             ]
-    peekMatch (ix, con) = match (litP (IntegerL ix)) (normalB (peekConstr con)) []
-    peekConstr (DataCon cname _ _ fields) =
+    peekMatch (ix, con) = match (litP (IntegerL ix)) (normalB (peekCon con)) []
+    peekErr = match wildP (normalB [| error "Found invalid tag while peeking (" ++ $(lift (show headTy)) ++ ")" |]) []
+    peekCon (DataCon cname _ _ fields) =
         letE (offsetDecls fields) $
         case fields of
             [] -> [| pure $(conE cname) |]
