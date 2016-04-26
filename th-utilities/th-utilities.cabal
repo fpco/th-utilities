@@ -17,13 +17,26 @@ library
   exposed-modules:     TH.RelativePaths
                        TH.ReifyDataType
                        TH.Utilities
+                       TH.Derive
   build-depends:       base >= 4.7 && < 5,
                        bytestring,
                        directory,
                        filepath,
+                       syb,
                        template-haskell >= 2.7,
-                       text
+                       text,
+                       th-orphans
   default-language:    Haskell2010
+
+test-suite test
+    type:             exitcode-stdio-1.0
+    hs-source-dirs:   test
+    main-is:          Main.hs
+    other-modules:    Test.TH
+    build-depends:    base,
+                      th-utilities,
+                      template-haskell
+    default-language: Haskell2010
 
 source-repository head
   type:     git

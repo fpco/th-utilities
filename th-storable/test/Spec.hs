@@ -5,6 +5,7 @@ import           Data.Int
 import qualified Data.Vector.Storable as SV
 import           Foreign.Storable
 import           Foreign.Storable.TH
+import           TH.Derive
 import           Test.Hspec
 
 data ADataType
@@ -13,7 +14,7 @@ data ADataType
     | Con2 Int32 Int64
     deriving (Eq, Show)
 
-$(derive [d| instance Storable ADataType |])
+$(derive [d| instance Deriving (Storable ADataType) |])
 
 main :: IO ()
 main = hspec $ describe "th-storable" $

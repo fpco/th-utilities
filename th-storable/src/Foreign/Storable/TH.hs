@@ -8,7 +8,7 @@
 {-# LANGUAGE MagicHash #-}
 
 module Foreign.Storable.TH
-    ( derive
+    ( makeStorableInst
     ) where
 
 import           Control.Monad
@@ -24,25 +24,20 @@ import           Foreign.Ptr
 import           Foreign.Storable
 import           Language.Haskell.TH
 import           Language.Haskell.TH.Syntax
+import           TH.Derive
 import           TH.ReifyDataType
 import           TH.Utilities
 
---TODO: support constraint kinds, for concision!
+instance Deriver (Storable a) where
+    runDeriver _ = makeStorableInst
 
-derive :: Q [Dec] -> Q [Dec]
-derive decs = return . concat =<< mapM deriveInstance =<< decs
-
-deriveInstance :: Dec -> Q [Dec]
-deriveInstance (InstanceD cxt ty@(unAppsT -> ((ConT className):args)) []) =
-    if className == ''Storable
-       then case args of
-           [unAppsT -> (ConT name:args')] -> do
-               DataType _ tvs preds cons <- reifyDataType name
-               let cons' = substituteTvs (M.fromList (zip tvs args')) cons
-               makeStorable cxt ty cons'
-           _ -> fail "Expected concrete datatype to derive for Storable instance"
-       else fail $ "derive doesn't know how to derive instances of " ++ show className
-deriveInstance _ = fail "derive only expects empty instance declarations"
+makeStorableInst :: Cxt -> Type -> Q [Dec]
+makeStorableInst cxt ty@(AppT (ConT ((== ''Storable) -> True)) (unAppsT -> (ConT name:args))) = do
+    DataType _ tvs preds cons <- reifyDataType name
+    let cons' = substituteTvs (M.fromList (zip tvs args)) cons
+    makeStorableImpl cxt ty cons'
+makeStorableInst _ _=
+    fail "Expected to derive Storable for a concrete datatype."
 
 substituteTvs :: Data a => M.Map Name Type -> a -> a
 substituteTvs mp = transformTypes go
@@ -50,11 +45,14 @@ substituteTvs mp = transformTypes go
     go (VarT name) | Just ty <- M.lookup name mp = ty
     go ty = gmapT (substituteTvs mp) ty
 
+transformTypes :: Data a => (Type -> Type) -> a -> a
+transformTypes f = gmapT (transformTypes f) `extT` (id :: String -> String) `extT` f
+
 -- TODO: recursion check? At least document that this could in some
 -- cases work, but produce a bogus instance.
 
-makeStorable :: Cxt -> Type -> [DataCon] -> Q [Dec]
-makeStorable cxt headTy cons = do
+makeStorableImpl :: Cxt -> Type -> [DataCon] -> Q [Dec]
+makeStorableImpl cxt headTy cons = do
     -- Since this instance doesn't pay attention to alignment, we
     -- just say alignment doesn't matter.
     alignmentMethod <- [| 1 |]
@@ -147,8 +145,3 @@ makeStorable cxt headTy cons = do
         offsetExpr ix ty = [| $(sizeOfExpr ty) + $(varE (offset (ix - 1))) |]
     sizeOfExpr ty = [| $(varE 'sizeOf) (error "sizeOf evaluated its argument" :: $(return ty)) |]
     offset ix = mkName ("offset" ++ show ix)
-
--- Misc util
-
-transformTypes :: Data a => (Type -> Type) -> a -> a
-transformTypes f = gmapT (transformTypes f) `extT` (id :: String -> String) `extT` f
