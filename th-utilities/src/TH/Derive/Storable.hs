@@ -7,7 +7,9 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE MagicHash #-}
 
-module Foreign.Storable.TH
+-- | 'Storable' deriver for data types. This works for any non-recursive
+-- datatype which has 'Storable' fields.
+module TH.Derive.Storable
     ( makeStorableInst
     ) where
 
@@ -31,6 +33,7 @@ import           TH.Utilities
 instance Deriver (Storable a) where
     runDeriver _ = makeStorableInst
 
+-- | Implementation used for 'runDeriver'.
 makeStorableInst :: Cxt -> Type -> Q [Dec]
 makeStorableInst cxt ty@(AppT (ConT ((== ''Storable) -> True)) (unAppsT -> (ConT name:args))) = do
     DataType _ tvs preds cons <- reifyDataType name

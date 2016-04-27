@@ -2,5 +2,4 @@ resolver: lts-5.13
 packages:
 - th-orphans
 - th-reify-many
-- th-storable
 - th-utilities

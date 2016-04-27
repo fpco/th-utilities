@@ -2,7 +2,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Test.TH where
+module TH.DeriveSpec.TH where
 
 import TH.Derive
 import Language.Haskell.TH

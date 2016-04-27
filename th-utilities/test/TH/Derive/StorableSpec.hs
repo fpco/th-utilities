@@ -1,11 +1,13 @@
 {-# LANGUAGE TemplateHaskell #-}
 
+module TH.Derive.StorableSpec (spec) where
+
 import           Control.Monad (when)
 import           Data.Int
 import qualified Data.Vector.Storable as SV
 import           Foreign.Storable
-import           Foreign.Storable.TH
 import           TH.Derive
+import           TH.Derive.Storable ()
 import           Test.Hspec
 
 data ADataType
@@ -16,8 +18,8 @@ data ADataType
 
 $($(derive [d| instance Deriving (Storable ADataType) |]))
 
-main :: IO ()
-main = hspec $ describe "th-storable" $
+spec :: Spec
+spec = describe "th-storable" $
     it "can roundtrip a data type" $ do
         roundTrips Con0
         roundTrips (Con1 minBound)
