@@ -14,7 +14,7 @@ data ADataType
     | Con2 Int32 Int64
     deriving (Eq, Show)
 
-$(derive [d| instance Deriving (Storable ADataType) |])
+$($(derive [d| instance Deriving (Storable ADataType) |]))
 
 main :: IO ()
 main = hspec $ describe "th-storable" $

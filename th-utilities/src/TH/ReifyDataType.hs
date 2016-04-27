@@ -3,6 +3,9 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE LambdaCase #-}
 
+-- | Utilities for reifying simplified datatype info. It omits details
+-- that aren't usually relevant to generating instances that work with
+-- the datatype. This makes it easier to use TH to derive instances.
 module TH.ReifyDataType where
 
 import Data.Data (Data)
@@ -16,9 +19,7 @@ import TH.Utilities
 data DataType = DataType
     { dtName :: Name
     , dtTvs :: [Name]
-    , dtCxt :: Cxt
-    , dtCons :: [DataCon]
-    }
+    , dtCxt :: Cxt , dtCons :: [DataCon]}
     deriving (Eq, Show, Ord, Data, Typeable, Generic)
 
 -- | Simplified info about a 'Con'. Omits strictness, and kind info.
@@ -32,6 +33,8 @@ data DataCon = DataCon
     }
     deriving (Eq, Show, Ord, Data, Typeable, Generic)
 
+-- | Reify the given data or newtype declaration, and yields its
+-- 'DataType' representation.
 reifyDataType :: Name -> Q DataType
 reifyDataType queryName = do
     info <- reify queryName
@@ -54,6 +57,8 @@ reifyDataType queryName = do
             return (DataType name tvs cxt cs)
         _ -> fail $ "Expected to reify a datatype, instead got:\n" ++ pprint info
 
+-- | Convert a 'Con' to a list of 'DataCon'. The result is a list
+-- because 'GadtC' and 'RecGadtC' can define multiple constructors.
 conToDataCons :: Con -> [DataCon]
 conToDataCons = \case
     NormalC name slots ->

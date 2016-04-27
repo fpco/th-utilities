@@ -5,7 +5,36 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ViewPatterns #-}
 
-module TH.Derive where
+-- | This module implements a system for registering and using typeclass
+-- derivers and instantiators. This allows you to derive instances for
+-- typeclasses beyond GHC's ability to generate instances in @deriving@
+-- clauses.
+--
+-- For exmaple, "TH.Derive.Storable" defines a 'Deriver' for 'Storable'.
+-- This allows us to use 'derive' to generate an instance for Storable:
+--
+-- @
+--     data X = X Int Float
+--
+--     $($(derive [d| instance Deriving (Storable X) |]))
+-- @
+--
+-- In particular, note the use of double splicing - @$($(derive [d| ...
+-- |]))@. The inner @$(derive [d| ... |])@ expression generates code
+-- which invokes the 'runDeriver' method with appropriate arguments. The
+-- outer @$( ... $)@ then runs that code in order to generate the
+-- resulting instances. This is how we achieve dispatch at compile time.
+--
+-- The power of this approach is that the set of 'Deriver's and
+-- 'Instantiator's are open. Users can just use 'derive' along with
+-- normal instance syntax to cause instances to be generated.
+module TH.Derive
+    ( derive
+    , Deriving
+    , Deriver(..)
+    , Instantiator(..)
+    , dequalifyMethods
+    ) where
 
 import Data.Data
 import Data.Proxy (Proxy(..))
@@ -19,19 +48,38 @@ import Data.Generics
 
 --TODO: support deriving on constraint kinds, for concision!
 
-class Deriving (cls :: Constraint)
+-- | This class has no instances. Its only purpose is usage within the
+-- @[d| ... |]@ quote provided to 'derive'. Usage such as @instance
+-- Deriving (Foo X)@ indicates that you would like to use the 'Deriver'
+-- registered for @Foo a@.
+class Deriving (cls :: Constraint) where
+    -- Un-exported method, to prevent this class from being
+    -- instantiated.
+    noInstances :: cls => ()
 
+-- | Instances of 'Deriver' describe a default way of creating an
+-- instance for a particular typeclass. For example, if I wanted to
+-- write something that derives 'Eq' instances, I would write a
+-- @instance Deriver (Eq a)@.
 class Deriver (cls :: Constraint) where
     runDeriver :: Proxy cls -> Cxt -> Type -> Q [Dec]
 
+-- | Instances of 'Instantiator' are similar in purpose to instance of
+-- 'Deriver'. The difference is that instead of using the 'Deriving'
+-- class, each instantiator has its own new typeclass. This means that
+-- you can have multiple instantiators that all produce instances for
+-- the same typeclass, using different approaches.
+--
+-- Having a new class also allows the instantiator to have methods and
+-- data / type family declarations. This allows the user to provide
+-- definitions which specify how the generated instance behaves.
 class Instantiator (inst :: Constraint) where
     runInstantiator :: Proxy inst -> Cxt -> Type -> [Dec] -> Q [Dec]
 
+-- | This is the primary function for users of "TH.Derive". See the
+-- module documentation for usage info.
 derive :: DecsQ -> ExpQ
 derive decsq = do
-    -- TODO: warnings / errors for invalid derivers?
-    -- ClassI _ insts <- reify ''Deriver
-    -- let derivers = mapMaybe deriverInfo insts
     decs <- decsq
     let labeledDecs = zip (map (mkName . ("x" ++) . show) [0..]) decs
     doE $
@@ -53,6 +101,12 @@ derive decsq = do
         "Expected deriver instance, instead got:\n" ++
         show decl
 
+-- | Useful function for defining 'Instantiator' instances. It uses
+-- 'Data' to generically replace references to the methods with plain
+-- 'Name's. This is handy when you are putting the definitions passed to
+-- the instantiator in a where clause. It is also useful so that you can
+-- reference the class methods from AST quotes involved in the
+-- definition of the instantiator.
 dequalifyMethods :: Data a => Name -> a -> Q a
 dequalifyMethods className x = do
       info <- reify className
@@ -89,6 +143,11 @@ derive f =
 -}
 
 {-
+    -- Code originally from 'deriver'
+    -- TODO: warnings / errors for invalid derivers?
+    ClassI _ insts <- reify ''Deriver
+    let derivers = mapMaybe deriverInfo insts
+
 deriverInfo :: InstanceDec -> Maybe (Name, Name, Type)
 deriverInfo (InstanceD _ (AppT (AppT (ConT ''Deriving) (ConT deriver)) cls)) =
      case unAppsT cls of

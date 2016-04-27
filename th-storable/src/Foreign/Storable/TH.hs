@@ -103,7 +103,7 @@ makeStorableImpl cxt headTy cons = do
                              (map peekMatch (zip [0..] cons) ++ [peekErr]))
             ]
     peekMatch (ix, con) = match (litP (IntegerL ix)) (normalB (peekCon con)) []
-    peekErr = match wildP (normalB [| error "Found invalid tag while peeking (" ++ $(lift (show headTy)) ++ ")" |]) []
+    peekErr = match wildP (normalB [| error ("Found invalid tag while peeking (" ++ $(lift (show headTy)) ++ ")") |]) []
     peekCon (DataCon cname _ _ fields) =
         letE (offsetDecls fields) $
         case fields of
