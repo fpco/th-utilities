@@ -37,14 +37,13 @@ module TH.Derive
     ) where
 
 import Data.Data
+import Data.Generics
 import Data.Proxy (Proxy(..))
 import GHC.Exts (Constraint)
 import GHC.TypeLits
 import Language.Haskell.TH
 import Language.Haskell.TH.Instances
 import TH.Utilities
-import Data.Data
-import Data.Generics
 
 --TODO: support deriving on constraint kinds, for concision!
 

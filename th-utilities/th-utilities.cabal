@@ -14,11 +14,11 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     TH.RelativePaths
-                       TH.ReifyDataType
-                       TH.Utilities
-                       TH.Derive
+  exposed-modules:     TH.Derive
                        TH.Derive.Storable
+                       TH.ReifyDataType
+                       TH.RelativePaths
+                       TH.Utilities
   build-depends:       base >= 4.7 && < 5,
                        bytestring,
                        containers,
@@ -35,7 +35,8 @@ test-suite test
     type:             exitcode-stdio-1.0
     hs-source-dirs:   test
     main-is:          Main.hs
-    other-modules:    TH.DeriveSpec,
+    other-modules:    TH.Derive.StorableSpec,
+                      TH.DeriveSpec,
                       TH.DeriveSpec.TH
     build-depends:    base,
                       hspec,
