@@ -7,8 +7,11 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE ViewPatterns #-}
 
--- | 'Storable' deriver for data types. This works for any non-recursive
--- datatype which has 'Storable' fields.
+-- Implementation of a 'Storable' deriver for data types. This works for
+-- any non-recursive datatype which has 'Storable' fields.
+--
+-- Most users won't need to import this module directly. Instead, use
+-- 'derive' / 'Deriving' to create 'Storable' instances.
 module TH.Derive.Storable
     ( makeStorableInst
     ) where
@@ -26,30 +29,19 @@ import           Foreign.Ptr
 import           Foreign.Storable
 import           Language.Haskell.TH
 import           Language.Haskell.TH.Syntax
-import           TH.Derive
 import           TH.ReifyDataType
 import           TH.Utilities
+import           TH.Derive.Internal
 
 instance Deriver (Storable a) where
     runDeriver _ = makeStorableInst
 
 -- | Implementation used for 'runDeriver'.
 makeStorableInst :: Cxt -> Type -> Q [Dec]
-makeStorableInst cxt ty@(AppT (ConT ((== ''Storable) -> True)) (unAppsT -> (ConT name:args))) = do
-    DataType _ tvs preds cons <- reifyDataType name
-    let cons' = substituteTvs (M.fromList (zip tvs args)) cons
-    makeStorableImpl cxt ty cons'
-makeStorableInst _ _=
-    fail "Expected to derive Storable for a concrete datatype."
-
-substituteTvs :: Data a => M.Map Name Type -> a -> a
-substituteTvs mp = transformTypes go
-  where
-    go (VarT name) | Just ty <- M.lookup name mp = ty
-    go ty = gmapT (substituteTvs mp) ty
-
-transformTypes :: Data a => (Type -> Type) -> a -> a
-transformTypes f = gmapT (transformTypes f) `extT` (id :: String -> String) `extT` f
+makeStorableInst cxt ty = do
+    argTy <- expectTyCon1 ''Storable ty
+    dt <- reifyDataTypeSubstituted argTy
+    makeStorableImpl cxt ty (dtCons dt)
 
 -- TODO: recursion check? At least document that this could in some
 -- cases work, but produce a bogus instance.
@@ -98,7 +90,7 @@ makeStorableImpl cxt headTy cons = do
     -- Choose a tag size large enough for this constructor count.
     -- Expression used for the definition of peek.
     peekExpr = case cons of
-        [] -> [| error ("Attempting to peek type with no constructors (" ++ $(lift (show headTy)) ++ ")") |]
+        [] -> [| error ("Attempting to peek type with no constructors (" ++ $(lift (pprint headTy)) ++ ")") |]
         [con] -> peekCon con
         _ -> doE
             [ bindS (varP tagName) [| peek (castPtr $(ptrExpr)) |]
@@ -106,7 +98,7 @@ makeStorableImpl cxt headTy cons = do
                              (map peekMatch (zip [0..] cons) ++ [peekErr]))
             ]
     peekMatch (ix, con) = match (litP (IntegerL ix)) (normalB (peekCon con)) []
-    peekErr = match wildP (normalB [| error ("Found invalid tag while peeking (" ++ $(lift (show headTy)) ++ ")") |]) []
+    peekErr = match wildP (normalB [| error ("Found invalid tag while peeking (" ++ $(lift (pprint headTy)) ++ ")") |]) []
     peekCon (DataCon cname _ _ fields) =
         letE (offsetDecls fields) $
         case fields of

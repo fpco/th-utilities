@@ -19,6 +19,7 @@ library
                        TH.ReifyDataType
                        TH.RelativePaths
                        TH.Utilities
+  other-modules:       TH.Derive.Internal
   build-depends:       base >= 4.7 && < 5,
                        bytestring,
                        containers,

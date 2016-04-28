@@ -7,8 +7,8 @@
 module TH.DeriveSpec (spec) where
 
 import TH.Derive
+import TH.DeriveSpec.TH
 import Test.Hspec
-import Test.TH
 
 data Foo = Foo
 

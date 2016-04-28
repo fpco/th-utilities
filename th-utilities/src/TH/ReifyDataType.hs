@@ -6,21 +6,30 @@
 -- | Utilities for reifying simplified datatype info. It omits details
 -- that aren't usually relevant to generating instances that work with
 -- the datatype. This makes it easier to use TH to derive instances.
-module TH.ReifyDataType where
+module TH.ReifyDataType
+    ( DataType(..)
+    , DataCon(..)
+    , reifyDataType
+    , conToDataCons
+    , reifyDataTypeSubstituted
+    ) where
 
-import Data.Data (Data)
-import Data.Typeable (Typeable)
-import GHC.Generics (Generic)
-import Language.Haskell.TH
-import TH.Utilities
+import           Data.Data (Data, gmapT)
+import           Data.Generics.Aliases (extT)
+import qualified Data.Map as M
+import           Data.Typeable (Typeable)
+import           GHC.Generics (Generic)
+import           Language.Haskell.TH
+import           TH.Utilities
 
 -- | Simplified info about a 'DataD'. Omits deriving, strictness, and
 -- kind info.
 data DataType = DataType
     { dtName :: Name
     , dtTvs :: [Name]
-    , dtCxt :: Cxt , dtCons :: [DataCon]}
-    deriving (Eq, Show, Ord, Data, Typeable, Generic)
+    , dtCxt :: Cxt
+    , dtCons :: [DataCon]
+    } deriving (Eq, Show, Ord, Data, Typeable, Generic)
 
 -- | Simplified info about a 'Con'. Omits strictness, and kind info.
 -- This is much nicer than consuming 'Con' directly, because it unifies
@@ -30,8 +39,7 @@ data DataCon = DataCon
     , dcTvs :: [Name]
     , dcCxt :: Cxt
     , dcFields :: [(Maybe Name, Type)]
-    }
-    deriving (Eq, Show, Ord, Data, Typeable, Generic)
+    } deriving (Eq, Show, Ord, Data, Typeable, Generic)
 
 -- | Reify the given data or newtype declaration, and yields its
 -- 'DataType' representation.
@@ -76,3 +84,26 @@ conToDataCons = \case
     RecGadtC ns fields _ ->
         map (\n -> DataCon n [] [] (map (\(n, _, ty) -> (Just n, ty)) fields)) ns
 #endif
+
+-- | Like 'reifyDataType', but takes a 'Type' instead of just the 'Name'
+-- of the datatype. It expects a normal datatype argument (see
+-- 'typeToNamedCon').
+reifyDataTypeSubstituted :: Type -> Q DataType
+reifyDataTypeSubstituted ty =
+    case typeToNamedCon ty of
+        Nothing -> fail $ "Expected a datatype, but reifyDataTypeSubstituted was applied to " ++ pprint ty
+        Just (n, args) -> do
+            dt <- reifyDataType n
+            let cons' = substituteTvs (M.fromList (zip (dtTvs dt) args)) (dtCons dt)
+            return (dt { dtCons = cons' })
+
+-- TODO: add various handy generics based traversals to TH.Utilities
+
+substituteTvs :: Data a => M.Map Name Type -> a -> a
+substituteTvs mp = transformTypes go
+  where
+    go (VarT name) | Just ty <- M.lookup name mp = ty
+    go ty = gmapT (substituteTvs mp) ty
+
+transformTypes :: Data a => (Type -> Type) -> a -> a
+transformTypes f = gmapT (transformTypes f) `extT` (id :: String -> String) `extT` f
