@@ -7,7 +7,9 @@
 module TH.Utilities where
 
 import Data.Proxy
+import Data.Typeable
 import Language.Haskell.TH
+import Language.Haskell.TH.Syntax
 
 -- | Get the 'Name' of a 'TyVarBndr'
 tyVarBndrName :: TyVarBndr -> Name
@@ -78,3 +80,18 @@ freeVarsT (InfixT x n r) = freeVarsT x ++ freeVarsT y
 freeVarsT (UInfixT x n r) = freeVarsT x ++ freeVarsT y
 #endif
 freeVarsT _ = []
+
+-- | Hack to enable putting expressions inside 'lift'-ed TH data. For
+-- example, you could do
+--
+-- @
+--     main = print $(lift [ExpLifter [e| 1 + 1 |],  ExpLifter [e| 2 |]])
+-- @
+--
+-- Without 'ExpLifter', 'lift' tends to just generate code involving
+-- data construction. With 'ExpLifter', you can put more complicated
+-- expression into this construction.
+data ExpLifter = ExpLifter ExpQ deriving (Typeable)
+
+instance Lift ExpLifter where
+  lift (ExpLifter e) = e
