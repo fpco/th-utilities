@@ -7,7 +7,7 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE ViewPatterns #-}
 
--- Implementation of a 'Storable' deriver for data types. This works for
+-- | Implementation of a 'Storable' deriver for data types. This works for
 -- any non-recursive datatype which has 'Storable' fields.
 --
 -- Most users won't need to import this module directly. Instead, use
