@@ -34,6 +34,10 @@
 -- for standalone deriving, it is sometimes very difficult for TH to
 -- figure out appropriate superclass constraints.
 --
+-- * The instance gets thoroughly checked by GHC (syntax, kind, and type
+-- checking). This means that you get reasonably nice error messages
+-- when you misuse these.
+--
 -- * It allows the user to specify methods. With 'Instantiator's, the
 -- user can provide values which can be used in the definition of the
 -- generated instance. This is a bit like having
