@@ -1,0 +1,36 @@
+name: th-utilities
+version: 0.1.0.0
+synopsis: Collection of useful functions for use with Template Haskell
+maintainer: Michael Sloan <sloan@fpcomplete.com>
+license: MIT
+copyright: 2016 FP Complete
+github: fpco/th-utilities
+category: Template Haskell
+
+ghc-options: -Wall -fwarn-tabs -fwarn-incomplete-uni-patterns -fwarn-incomplete-record-updates
+
+dependencies:
+  - base >= 4.7 && < 5
+  - bytestring
+  - containers
+  - directory
+  - filepath
+  - primitive
+  - syb
+  - template-haskell >= 2.7
+  - text
+  - th-orphans
+
+library:
+  source-dirs: src
+  other-modules:
+    - TH.Derive.Internal
+
+tests:
+  test:
+    source-dirs: test
+    main: Main.hs
+    dependencies:
+      - th-utilities
+      - hspec
+      - vector
