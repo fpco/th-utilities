@@ -1,6 +1,0 @@
-[submodule "th-orphans"]
-	path = th-orphans
-	url = git://github.com/mgsloan/th-orphans.git
-[submodule "th-reify-many"]
-	path = th-reify-many
-	url = git://github.com/mgsloan/th-reify-many.git
