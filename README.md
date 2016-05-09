@@ -8,6 +8,8 @@ In particular:
   instances.  It allows for open registration of TH derivers, and reuses
   instance syntax for invoking them.
 
+  - `TH.Derive.Storable` defines derivation of Storable for ADTs.
+
 * `TH.ReifyDataType` provides utilities for reifying simplified datatype info.
   It omits details that you don't usually want to handle, making it much more
   straightforward to generate code based on datatype structure.
