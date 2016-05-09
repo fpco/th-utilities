@@ -20,7 +20,7 @@ import qualified Data.Map as M
 import           Data.Typeable (Typeable)
 import           GHC.Generics (Generic)
 import           Language.Haskell.TH
-import           Language.Haskell.TH.Instances
+import           Language.Haskell.TH.Instances ()
 import           TH.Utilities
 
 -- | Simplified info about a 'DataD'. Omits deriving, strictness, and
@@ -49,21 +49,21 @@ reifyDataType queryName = do
     info <- reify queryName
     case info of
 #if MIN_VERSION_template_haskell(2,11,0)
-        TyConI (DataD cxt name vars _kind cons _deriving) -> do
+        TyConI (DataD preds name vars _kind cons _deriving) -> do
 #else
-        TyConI (DataD cxt name vars cons _deriving) -> do
+        TyConI (DataD preds name vars cons _deriving) -> do
 #endif
             let tvs = map tyVarBndrName vars
                 cs = concatMap conToDataCons cons
-            return (DataType name tvs cxt cs)
+            return (DataType name tvs preds cs)
 #if MIN_VERSION_template_haskell(2,11,0)
-        TyConI (NewtypeD cxt name vars _kind con _deriving) -> do
+        TyConI (NewtypeD preds name vars _kind con _deriving) -> do
 #else
-        TyConI (NewtypeD cxt name vars con _deriving) -> do
+        TyConI (NewtypeD preds name vars con _deriving) -> do
 #endif
             let tvs = map tyVarBndrName vars
                 cs = conToDataCons con
-            return (DataType name tvs cxt cs)
+            return (DataType name tvs preds cs)
         _ -> fail $ "Expected to reify a datatype, instead got:\n" ++ pprint info
 
 -- | Convert a 'Con' to a list of 'DataCon'. The result is a list

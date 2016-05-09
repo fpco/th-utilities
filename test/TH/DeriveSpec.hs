@@ -14,24 +14,26 @@ data Foo = Foo
 
 data X = X
 
-data Y = Y | Z
+data T = Y | Z
 
 $($(derive [d|
   instance InstShowBlind Foo
 
   instance InstShowConst X where
-      constResult _ = "wow!"
+      _constResult _ = "wow!"
 
-  instance InstEqBy Y Bool where
-      toEq Y = True
-      toEq Z = False
+  instance InstEqOrdVia Bool T where
+      _toOrd Y = True
+      _toOrd Z = False
   |]))
 
+spec :: SpecWith ()
 spec = describe "Instantiators" $ do
     it "InstShowBlind" $ do
         show Foo `shouldBe` "ShowBlind"
     it "InstShowConst" $ do
         show X `shouldBe` "wow!"
-    it "InstEqBy" $ do
+    it "InstEqOrdVia" $ do
         (Y == Z) `shouldBe` False
+        (Y > Z) `shouldBe` True
         (Z == Z) `shouldBe` True

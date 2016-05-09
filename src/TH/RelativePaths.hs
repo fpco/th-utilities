@@ -24,7 +24,7 @@ import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.IO as LT
 import           Language.Haskell.TH (Q, Loc(loc_filename), location, runIO, reportWarning)
 import           Language.Haskell.TH.Syntax (addDependentFile)
-import           System.Directory (getDirectoryContents, getCurrentDirectory, setCurrentDirectory, doesFileExist)
+import           System.Directory (getDirectoryContents, getCurrentDirectory, setCurrentDirectory)
 import           System.FilePath
 
 -- | Reads a file as a strict ByteString. The path is specified relative

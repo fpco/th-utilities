@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MagicHash #-}
@@ -18,13 +19,8 @@ module TH.Derive.Storable
 
 import           Control.Applicative
 import           Control.Monad
-import           Data.Data (Data, gmapT)
-import           Data.Generics.Aliases (extT)
 import           Data.List (find)
-import qualified Data.Map as M
 import           Data.Maybe (fromMaybe)
-import           Data.Primitive.Types (Prim(..))
-import           Data.Typeable
 import           Data.Word
 import           Foreign.Ptr
 import           Foreign.Storable
@@ -40,16 +36,16 @@ instance Deriver (Storable a) where
 
 -- | Implementation used for 'runDeriver'.
 makeStorableInst :: Cxt -> Type -> Q [Dec]
-makeStorableInst cxt ty = do
+makeStorableInst preds ty = do
     argTy <- expectTyCon1 ''Storable ty
     dt <- reifyDataTypeSubstituted argTy
-    makeStorableImpl cxt ty (dtCons dt)
+    makeStorableImpl preds ty (dtCons dt)
 
 -- TODO: recursion check? At least document that this could in some
 -- cases work, but produce a bogus instance.
 
 makeStorableImpl :: Cxt -> Type -> [DataCon] -> Q [Dec]
-makeStorableImpl cxt headTy cons = do
+makeStorableImpl preds headTy cons = do
     -- Since this instance doesn't pay attention to alignment, we
     -- just say alignment doesn't matter.
     alignmentMethod <- [| 1 |]
@@ -62,7 +58,7 @@ makeStorableImpl cxt headTy cons = do
             , FunD (mkName "peek") [Clause [VarP ptrName] (NormalB peekMethod) []]
             , FunD (mkName "poke") [Clause [VarP ptrName, VarP valName] (NormalB pokeMethod) []]
             ]
-    return [InstanceD cxt headTy methods]
+    return [InstanceD preds headTy methods]
   where
     -- NOTE: Much of the code here resembles code in store for deriving
     -- Store instances. Changes here may be relevant there as well.
@@ -87,7 +83,7 @@ makeStorableImpl cxt headTy cons = do
     -- constructor.
     sizeExpr = appE (varE 'maximum) $
         listE [ appE (varE 'sum) (listE [sizeOfExpr ty | (_, ty) <- fields])
-              | (DataCon cname _ _ fields) <- cons
+              | (DataCon _ _ _ fields) <- cons
               ]
     -- Choose a tag size large enough for this constructor count.
     -- Expression used for the definition of peek.
@@ -141,4 +137,4 @@ makeStorableImpl cxt headTy cons = do
       where
         offsetExpr ix ty = [| $(sizeOfExpr ty) + $(varE (offset (ix - 1))) |]
     sizeOfExpr ty = [| $(varE 'sizeOf) (error "sizeOf evaluated its argument" :: $(return ty)) |]
-    offset ix = mkName ("offset" ++ show ix)
+    offset ix = mkName ("offset" ++ show (ix :: Int))

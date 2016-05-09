@@ -41,8 +41,8 @@
 -- * It allows the user to specify methods. With 'Instantiator's, the
 -- user can provide values which can be used in the definition of the
 -- generated instance. This is a bit like having
--- <https://ghc.haskell.org/trac/ghc/wiki/InstanceTemplates Instance
--- Templates>. We don't have pretty ways of writing these quite yet, but
+-- <https://ghc.haskell.org/trac/ghc/wiki/InstanceTemplates Instance Templates>.
+-- We don't have pretty ways of writing these quite yet, but
 -- I have worked on something
 -- <https://github.com/mgsloan/instance-templates similar in the past>.
 --

@@ -17,7 +17,7 @@ instance Instantiator (InstShowBlind a) where
     runInstantiator _ _ _ _ =
         fail "Theoretically impossible case in InstShowBlind instantiator for Show"
 
-class InstShowConst a where constResult :: Proxy a -> String
+class InstShowConst a where _constResult :: Proxy a -> String
 
 instance Instantiator (InstShowConst a) where
     runInstantiator _ preds (AppT (ConT ((== ''InstShowConst) -> True)) ty) decls =
@@ -25,20 +25,28 @@ instance Instantiator (InstShowConst a) where
         sequence
         [ instanceD (return preds) [t| Show $(return ty) |] $
             [valD (varP 'show)
-                  (normalB [| \_ -> constResult undefined |])
+                  (normalB [| \_ -> _constResult undefined |])
                   (map return decls)]]
     runInstantiator _ _ _ _ =
         fail "Theoretically impossible case in InstShowConst instantiator for Show"
 
-class Eq b => InstEqBy a b where
-    toEq :: a -> b
+class Ord o => InstEqOrdVia o a where
+    _toOrd :: a -> o
 
-instance Instantiator (InstEqBy a b) where
-    runInstantiator _ preds (AppT (AppT (ConT ((== ''InstEqBy) -> True)) aTy) bTy) decls =
-        dequalifyMethods ''InstEqBy =<<
+instance Instantiator (InstEqOrdVia o a) where
+    runInstantiator _ preds (AppT (AppT (ConT ((== ''InstEqOrdVia) -> True)) _oTy) aTy) decls =
+        dequalifyMethods ''InstEqOrdVia =<<
         sequence
-        [ instanceD (return preds) [t| Eq $(return aTy) |] $
+        [instanceD (return preds) [t| Eq $(return aTy) |] $
             [valD (varP '(==))
-                  (normalB [| \l r -> toEq l == toEq r |])
+                  (normalB [| \l r -> _toOrd l == _toOrd r |])
                   (map return decls)]
+
+        , instanceD (return preds) [t| Ord $(return aTy) |] $
+            [valD (varP 'compare)
+                  (normalB [| \l r -> compare (_toOrd l) (_toOrd r) |])
+                  (map return decls)
+            ]
         ]
+    runInstantiator _ _ _ _ =
+        fail "Theoretically impossible case in InstEqOrdVia instantiator"
