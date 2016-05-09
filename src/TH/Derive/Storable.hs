@@ -16,6 +16,7 @@ module TH.Derive.Storable
     ( makeStorableInst
     ) where
 
+import           Control.Applicative
 import           Control.Monad
 import           Data.Data (Data, gmapT)
 import           Data.Generics.Aliases (extT)
@@ -29,9 +30,10 @@ import           Foreign.Ptr
 import           Foreign.Storable
 import           Language.Haskell.TH
 import           Language.Haskell.TH.Syntax
+import           Prelude
+import           TH.Derive.Internal
 import           TH.ReifyDataType
 import           TH.Utilities
-import           TH.Derive.Internal
 
 instance Deriver (Storable a) where
     runDeriver _ = makeStorableInst

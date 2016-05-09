@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 
 -- | Miscellaneous Template Haskell utilities, added as needed by
 -- packages in the th-utilities repo and elsewhere.

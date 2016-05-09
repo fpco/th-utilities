@@ -20,6 +20,7 @@ import qualified Data.Map as M
 import           Data.Typeable (Typeable)
 import           GHC.Generics (Generic)
 import           Language.Haskell.TH
+import           Language.Haskell.TH.Instances
 import           TH.Utilities
 
 -- | Simplified info about a 'DataD'. Omits deriving, strictness, and
