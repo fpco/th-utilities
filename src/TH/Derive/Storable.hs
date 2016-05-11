@@ -111,7 +111,9 @@ makeStorableImpl preds headTy cons = do
     pokeMatch :: (Int, DataCon) -> MatchQ
     pokeMatch (ixcon, DataCon cname _ _ fields) =
         match (conP cname (map varP (map fName ixs)))
-              (normalB (doE (tagPokes ++ offsetLet ++ fieldPokes)))
+              (normalB (case tagPokes ++ offsetLet ++ fieldPokes of
+                           [] -> [|return ()|]
+                           stmts -> doE stmts))
               []
       where
         tagPokes = case cons of

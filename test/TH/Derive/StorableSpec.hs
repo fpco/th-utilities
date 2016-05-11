@@ -33,3 +33,7 @@ roundTrips :: (Storable a, Show a, Eq a) => a -> IO ()
 roundTrips x =
     when (SV.head (SV.singleton x) /= x) $
         fail ("Failed to roundtrip " ++ show x)
+
+-- Regression test for generating peek on single-constructor data types.
+data SingleCons = SingleCons
+$($(derive [d| instance Deriving (Storable SingleCons) |]))
