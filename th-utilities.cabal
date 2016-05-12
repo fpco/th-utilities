@@ -14,6 +14,8 @@ copyright:           2016 FP Complete
 category:            Template Haskell
 build-type:          Simple
 cabal-version:       >= 1.10
+extra-source-files:  README.md
+                     ChangeLog.md
 
 source-repository head
   type: git
