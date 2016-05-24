@@ -80,20 +80,22 @@ derive decsq = do
         map toStmt labeledDecs ++
         [ noBindS [e| return $ concat $(listE (map (varE . fst) labeledDecs)) |] ]
   where
-    toStmt (varName, InstanceD preds (AppT (ConT ((== ''Deriving) -> True)) cls) []) =
-        bindS (varP varName)
-              [e| runDeriver $(proxyE (return cls))
-                             preds
-                             cls |]
-    toStmt (varName, InstanceD preds ty decs) =
-        bindS (varP varName)
-              [e| runInstantiator $(proxyE (return ty))
-                                  preds
-                                  ty
-                                  decs |]
-    toStmt (_, decl) = fail $
-        "Expected deriver instance, instead got:\n" ++
-        show decl
+    -- FIXME: handle overlap info in template-haskell > 2.11.0
+    toStmt (varName, dec) = case fromPlainInstanceD dec of
+        Just (preds, AppT (ConT ((== ''Deriving) -> True)) cls, []) ->
+            bindS (varP varName)
+                  [e| runDeriver $(proxyE (return cls))
+                                 preds
+                                 cls |]
+        Just (preds, ty, decs) ->
+            bindS (varP varName)
+                  [e| runInstantiator $(proxyE (return ty))
+                                      preds
+                                      ty
+                                      decs |]
+        _ -> fail $
+            "Expected deriver or instantiator, instead got:\n" ++
+            show dec
 
 -- | Useful function for defining 'Instantiator' instances. It uses
 -- 'Data' to generically replace references to the methods with plain

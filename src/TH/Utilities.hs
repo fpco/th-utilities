@@ -54,8 +54,8 @@ expectTyCon2 :: Name -> Type -> Q (Type, Type)
 expectTyCon2 expected (AppT (AppT (ConT n) x) y) | expected == n = return (x, y)
 expectTyCon2 expected (AppT (AppT (PromotedT n) x) y) | expected == n = return (x, y)
 #if MIN_VERSION_template_haskell(2,11,0)
-expectTyCon2 expected (InfixT x n r) | expected == n = return (x, y)
-expectTyCon2 expected (UInfixT x n r) | expected == n = return (x, y)
+expectTyCon2 expected (InfixT x n y) | expected == n = return (x, y)
+expectTyCon2 expected (UInfixT x n y) | expected == n = return (x, y)
 #endif
 expectTyCon2 expected x = fail $
     "Expected " ++ pprint expected ++
@@ -77,10 +77,30 @@ freeVarsT (AppT l r) = freeVarsT l ++ freeVarsT r
 freeVarsT (SigT ty k) = freeVarsT ty ++ freeVarsT k
 freeVarsT (VarT n) = [n]
 #if MIN_VERSION_template_haskell(2,11,0)
-freeVarsT (InfixT x n r) = freeVarsT x ++ freeVarsT y
-freeVarsT (UInfixT x n r) = freeVarsT x ++ freeVarsT y
+freeVarsT (InfixT x n r) = freeVarsT x ++ freeVarsT r
+freeVarsT (UInfixT x n r) = freeVarsT x ++ freeVarsT r
 #endif
 freeVarsT _ = []
+
+-- | Utility to conveniently handle change to 'InstanceD' API in
+-- template-haskell-2.11.0
+plainInstanceD :: Cxt -> Type -> [Dec] -> Dec
+plainInstanceD =
+#if MIN_VERSION_template_haskell(2,11,0)
+    InstanceD Nothing
+#else
+    InstanceD
+#endif
+
+-- | Utility to conveniently handle change to 'InstanceD' API in
+-- template-haskell-2.11.0
+fromPlainInstanceD :: Dec -> Maybe (Cxt, Type, [Dec])
+#if MIN_VERSION_template_haskell(2,11,0)
+fromPlainInstanceD (InstanceD _ a b c) = Just (a, b, c)
+#else
+fromPlainInstanceD (InstanceD a b c) = Just (a, b, c)
+#endif
+fromPlainInstanceD _ = Nothing
 
 -- | Hack to enable putting expressions inside 'lift'-ed TH data. For
 -- example, you could do

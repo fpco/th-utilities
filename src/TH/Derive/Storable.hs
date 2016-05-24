@@ -58,7 +58,7 @@ makeStorableImpl preds headTy cons = do
             , FunD (mkName "peek") [Clause [VarP ptrName] (NormalB peekMethod) []]
             , FunD (mkName "poke") [Clause [VarP ptrName, VarP valName] (NormalB pokeMethod) []]
             ]
-    return [InstanceD preds headTy methods]
+    return [plainInstanceD preds headTy methods]
   where
     -- NOTE: Much of the code here resembles code in store for deriving
     -- Store instances. Changes here may be relevant there as well.

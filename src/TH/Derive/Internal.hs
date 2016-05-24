@@ -14,7 +14,7 @@ import Language.Haskell.TH (Q, Dec, Cxt, Type)
 class Deriving (cls :: Constraint) where
     -- Un-exported method, to prevent this class from being
     -- instantiated.
-    _noInstances :: cls => ()
+    _noInstances :: Proxy cls
 
 -- | Instances of 'Deriver' describe a default way of creating an
 -- instance for a particular typeclass. For example, if I wanted to
