@@ -1,5 +1,5 @@
 name: th-utilities
-version: 0.1.0.1
+version: 0.1.1.0
 synopsis: Collection of useful functions for use with Template Haskell
 maintainer: Michael Sloan <sloan@fpcomplete.com>
 license: MIT
