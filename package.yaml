@@ -6,6 +6,9 @@ license: MIT
 copyright: 2016 FP Complete
 github: fpco/th-utilities
 category: Template Haskell
+extra-source-files:
+  - README.md
+  - ChangeLog.md
 
 ghc-options: -Wall -fwarn-tabs -fwarn-incomplete-uni-patterns -fwarn-incomplete-record-updates
 
