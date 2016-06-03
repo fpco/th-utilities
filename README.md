@@ -1,7 +1,6 @@
 # th-utilities
 
-[![Build Status](https://travis-ci.org/commercialhaskell/stack.svg?branch=master)](https://travis-ci.org/commercialhaskell/stack)
-[![Build Status](https://travis-ci.org/commercialhaskell/stack.svg?branch=master)](https://travis-ci.org/commercialhaskell/stack)
+[![Build Status](https://travis-ci.org/commercialhaskell/th-utilities.svg?branch=master)](https://travis-ci.org/fpco/th-utilities)
 
 The 'th-utilities' package provides a number of useful utilities for
 [Template Haskell](https://hackage.haskell.org/package/template-haskell-2.10.0.0).
