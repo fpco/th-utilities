@@ -3,7 +3,7 @@
 -- see: https://github.com/sol/hpack
 
 name:                th-utilities
-version:             0.1.1.1
+version:             0.2.0.0
 synopsis:            Collection of useful functions for use with Template Haskell
 homepage:            https://github.com/fpco/th-utilities#readme
 bug-reports:         https://github.com/fpco/th-utilities/issues
