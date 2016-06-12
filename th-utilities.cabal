@@ -41,7 +41,7 @@ library
   exposed-modules:
     TH.Derive
     TH.Derive.Storable
-    TH.ReifyDataType
+    TH.ReifySimple
     TH.RelativePaths
     TH.Utilities
   other-modules:

@@ -28,7 +28,7 @@ import           Language.Haskell.TH
 import           Language.Haskell.TH.Syntax
 import           Prelude
 import           TH.Derive.Internal
-import           TH.ReifyDataType
+import           TH.ReifySimple
 import           TH.Utilities
 
 instance Deriver (Storable a) where
