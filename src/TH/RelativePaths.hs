@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 -- | This module provides Template Haskell utilities for loading files
@@ -15,6 +16,7 @@
 -- it's in.
 module TH.RelativePaths where
 
+import           Control.Exception (IOException, catch)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
 import           Data.List (find)
@@ -24,7 +26,7 @@ import qualified Data.Text.Lazy as LT
 import qualified Data.Text.Lazy.IO as LT
 import           Language.Haskell.TH (Q, Loc(loc_filename), location, runIO, reportWarning)
 import           Language.Haskell.TH.Syntax (addDependentFile)
-import           System.Directory (getDirectoryContents, getCurrentDirectory, setCurrentDirectory)
+import           System.Directory (getDirectoryContents, getCurrentDirectory, setCurrentDirectory, canonicalizePath)
 import           System.FilePath
 
 -- | Reads a file as a strict ByteString. The path is specified relative
@@ -90,13 +92,19 @@ withCabalPackageWorkDir f = do
 pathRelativeToCabalPackage :: FilePath -> Q FilePath
 pathRelativeToCabalPackage fp = do
     loc <- location
-    mcabalFile <- runIO $ findCabalFile (loc_filename loc)
-    case mcabalFile of
-        Just cabalFile -> return (takeDirectory cabalFile </> fp)
-        Nothing -> do
-            reportWarning "Failed to find cabal file, in order to resolve relative paths in TH.  Using current working directory instead."
-            cwd <- runIO getCurrentDirectory
-            return (cwd </> fp)
+    parent <-
+        if loc_filename loc == "<interactive>"
+            then runIO getCurrentDirectory
+            else do
+                mcanonical <- runIO $ fmap Just (canonicalizePath (loc_filename loc))
+                   `catch` \(_err :: IOException) -> return Nothing
+                mcabalFile <- runIO $ maybe (return Nothing) findCabalFile mcanonical
+                case mcabalFile of
+                    Just cabalFile -> return (takeDirectory cabalFile)
+                    Nothing -> do
+                        reportWarning "Failed to find cabal file, in order to resolve relative paths in TH.  Using current working directory instead."
+                        runIO getCurrentDirectory
+    return (parent </> fp)
 
 -- | Given the path to a file or directory, search parent directories
 -- for a .cabal file.
