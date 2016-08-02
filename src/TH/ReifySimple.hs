@@ -54,7 +54,7 @@ module TH.ReifySimple
     , reifyDataTypeSubstituted
     ) where
 
-import           Control.Applicative ((<|>))
+import           Control.Applicative
 import           Data.Data (Data, gmapT)
 import           Data.Generics.Aliases (extT)
 import qualified Data.Map as M

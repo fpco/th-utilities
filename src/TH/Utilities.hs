@@ -11,8 +11,6 @@ module TH.Utilities where
 
 import Data.Data
 import Data.Generics
-import Data.Proxy
-import Data.Typeable
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax
 
