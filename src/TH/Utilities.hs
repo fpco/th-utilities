@@ -17,6 +17,10 @@ tyVarBndrName :: TyVarBndr -> Name
 tyVarBndrName (PlainTV n) = n
 tyVarBndrName (KindedTV n _) = n
 
+appsT :: Type -> [Type] -> Type
+appsT x [] = x
+appsT x (y:xs) = appsT (AppT x y) xs
+
 -- | Breaks a type application like @A b c@ into [A, b, c]. In other
 -- words, it descends leftwards down 'AppT' constructors, and yields a
 -- list of the results.
