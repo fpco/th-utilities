@@ -2,11 +2,15 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 -- | Miscellaneous Template Haskell utilities, added as needed by
 -- packages in the th-utilities repo and elsewhere.
 module TH.Utilities where
 
+import Data.Data
+import Data.Generics
 import Data.Proxy
 import Data.Typeable
 import Language.Haskell.TH
@@ -69,6 +73,24 @@ expectTyCon2 expected x = fail $
 proxyE :: TypeQ -> ExpQ
 proxyE ty = [| Proxy :: Proxy $(ty) |]
 
+-- | Like the 'everywhere' generic traversal strategy, but skips over
+-- strings. This can aid performance of TH traversals quite a bit.
+everywhereButStrings :: Data a => (forall b. Data b => b -> b) -> a -> a
+everywhereButStrings f =
+    (f . gmapT (everywhereButStrings f)) `extT` (id :: String -> String)
+
+-- | Like the 'everywhereM' generic traversal strategy, but skips over
+-- strings. This can aid performance of TH traversals quite a bit.
+everywhereButStringsM :: forall a m. (Data a, Monad m) => GenericM m -> a -> m a
+everywhereButStringsM f x = do
+    x' <- gmapM (everywhereButStringsM f) x
+    (f `extM` (return :: String -> m String)) x'
+
+-- | Make a 'Name' with a 'NameS' or 'NameQ' flavour, from a 'Name' with
+-- any 'NameFlavour'. This may change the meaning of names.
+toSimpleName :: Name -> Name
+toSimpleName = mkName . pprint
+
 -- | Construct a plain name ('mkName') based on the given name. This is
 -- useful for cases where TH doesn't expect a unique name.
 dequalify :: Name -> Name
@@ -105,6 +127,17 @@ fromPlainInstanceD (InstanceD _ a b c) = Just (a, b, c)
 fromPlainInstanceD (InstanceD a b c) = Just (a, b, c)
 #endif
 fromPlainInstanceD _ = Nothing
+
+-- | Utility to convert "Data.Typeable" 'TypeRep' to a 'Type'. Note that
+-- this function is known to not yet work for many cases, but it does
+-- work for normal user datatypes. In future versions this function
+-- might have better behavior.
+typeRepToType :: TypeRep -> Q Type
+typeRepToType tr = do
+    let (con, args) = splitTyConApp tr
+        name = Name (OccName (tyConName con)) (NameG TcClsName (PkgName (tyConPackage con)) (ModName (tyConModule con)))
+    resultArgs <- mapM typeRepToType args
+    return (appsT (ConT name) resultArgs)
 
 -- | Hack to enable putting expressions inside 'lift'-ed TH data. For
 -- example, you could do
