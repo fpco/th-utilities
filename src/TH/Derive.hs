@@ -10,7 +10,7 @@
 -- typeclasses beyond GHC's ability to generate instances in @deriving@
 -- clauses.
 --
--- For exmaple, "TH.Derive.Storable" defines a 'Deriver' for 'Storable'.
+-- For example, "TH.Derive.Storable" defines a 'Deriver' for 'Storable'.
 -- This allows us to use 'derive' to generate an instance for Storable:
 --
 -- @
