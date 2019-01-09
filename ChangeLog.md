@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 0.2.0.1
+
+* Fixes build on 7.8
+
+* Fixes warnings
+
 ## 0.2.0.0
 
 * Adds TH.ReifySimple, which supports reifying most of the information TH users
