@@ -1,6 +1,6 @@
 # ChangeLog
 
-## 0.2.1.0
+## 0.2.2.0
 
 * Fixes derive and instantiator mechanisms to work with ghc 7.10 and
   earlier.  Previously, invocation was broken when type variables were
