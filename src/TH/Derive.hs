@@ -84,18 +84,25 @@ derive decsq = do
     toStmt (varName, dec) = case fromPlainInstanceD dec of
         Just (preds, AppT (ConT ((== ''Deriving) -> True)) cls, []) ->
             bindS (varP varName)
-                  [e| runDeriver $(proxyE (return cls))
+                  [e| runDeriver $(proxyE (return (unitTyVars cls)))
                                  preds
                                  cls |]
         Just (preds, ty, decs) ->
             bindS (varP varName)
-                  [e| runInstantiator $(proxyE (return ty))
+                  [e| runInstantiator $(proxyE (return (unitTyVars ty)))
                                       preds
                                       ty
                                       decs |]
         _ -> fail $
             "Expected deriver or instantiator, instead got:\n" ++
             show dec
+
+-- | Turn type variables into unit types.
+unitTyVars :: Data a => a -> a
+unitTyVars = everywhere (id `extT` modifyType)
+  where
+    modifyType (VarT _) = TupleT 0
+    modifyType ty = ty
 
 -- | Useful function for defining 'Instantiator' instances. It uses
 -- 'Data' to generically replace references to the methods with plain

@@ -2,6 +2,10 @@
 
 ## 0.2.1.0
 
+* Fixes derive and instantiator mechanisms to work with ghc 7.10 and
+  earlier.  Previously, invocation was broken when type variables were
+  used.
+
 * Fixes `freeVarsT` - it now looks through more constructors of `Type`.
 
 * Adds `dequalifyTyVars` to dequalify every type variable.
