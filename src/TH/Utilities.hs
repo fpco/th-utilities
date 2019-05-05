@@ -94,6 +94,13 @@ toSimpleName = mkName . pprint
 dequalify :: Name -> Name
 dequalify = mkName . nameBase
 
+-- | Apply 'dequalify' to every type variable.
+dequalifyTyVars :: Data a => a -> a
+dequalifyTyVars = everywhere (id `extT` modifyType)
+  where
+    modifyType (VarT n) = VarT (dequalify n)
+    modifyType ty = ty
+
 -- | Get the free type variables of a 'Type'.
 freeVarsT :: Type -> [Name]
 freeVarsT (ForallT tvs _ ty) = filter (`notElem` (map tyVarBndrName tvs)) (freeVarsT ty)

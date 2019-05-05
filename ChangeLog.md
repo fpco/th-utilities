@@ -4,6 +4,8 @@
 
 * Fixes `freeVarsT` - it now looks through more constructors of `Type`.
 
+* Adds `dequalifyTyVars` to dequalify every type variable.
+
 ## 0.2.0.1
 
 * Fixes build on 7.8
