@@ -97,14 +97,8 @@ dequalify = mkName . nameBase
 -- | Get the free type variables of a 'Type'.
 freeVarsT :: Type -> [Name]
 freeVarsT (ForallT tvs _ ty) = filter (`notElem` (map tyVarBndrName tvs)) (freeVarsT ty)
-freeVarsT (AppT l r) = freeVarsT l ++ freeVarsT r
-freeVarsT (SigT ty k) = freeVarsT ty ++ freeVarsT k
 freeVarsT (VarT n) = [n]
-#if MIN_VERSION_template_haskell(2,11,0)
-freeVarsT (InfixT x n r) = freeVarsT x ++ freeVarsT r
-freeVarsT (UInfixT x n r) = freeVarsT x ++ freeVarsT r
-#endif
-freeVarsT _ = []
+freeVarsT ty = concat $ gmapQ (const [] `extQ` freeVarsT) ty
 
 -- | Utility to conveniently handle change to 'InstanceD' API in
 -- template-haskell-2.11.0

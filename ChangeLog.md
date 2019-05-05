@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 0.2.1.0
+
+* Fixes `freeVarsT` - it now looks through more constructors of `Type`.
+
 ## 0.2.0.1
 
 * Fixes build on 7.8
