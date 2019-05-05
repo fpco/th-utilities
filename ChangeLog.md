@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 0.2.3.0
+
+* Improved fix to the type variable behavior with GHC <= 7.10.  Uses
+  `Any` in place of type variables instead of `()`, to allow for more
+  kinds than just `*` and `Constraint`.
+
 ## 0.2.2.0
 
 * Fixes derive and instantiator mechanisms to work with ghc 7.10 and

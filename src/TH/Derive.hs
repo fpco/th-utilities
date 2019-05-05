@@ -67,6 +67,7 @@ import Language.Haskell.TH.Instances ()
 import TH.Utilities
 import TH.Derive.Internal
 import TH.Derive.Storable ()
+import GHC.Exts (Any)
 
 --TODO: support deriving on constraint kinds, for concision!
 
@@ -84,12 +85,12 @@ derive decsq = do
     toStmt (varName, dec) = case fromPlainInstanceD dec of
         Just (preds, AppT (ConT ((== ''Deriving) -> True)) cls, []) ->
             bindS (varP varName)
-                  [e| runDeriver $(proxyE (return (unitTyVars cls)))
+                  [e| runDeriver $(proxyE (return (tyVarsToAny cls)))
                                  preds
                                  cls |]
         Just (preds, ty, decs) ->
             bindS (varP varName)
-                  [e| runInstantiator $(proxyE (return (unitTyVars ty)))
+                  [e| runInstantiator $(proxyE (return (tyVarsToAny ty)))
                                       preds
                                       ty
                                       decs |]
@@ -97,11 +98,16 @@ derive decsq = do
             "Expected deriver or instantiator, instead got:\n" ++
             show dec
 
--- | Turn type variables into unit types.
-unitTyVars :: Data a => a -> a
-unitTyVars = everywhere (id `extT` modifyType)
+-- | Turn type variables into uses of 'Any'.
+--
+-- The purpose of this is to avoid errors such as described in
+-- https://github.com/fpco/store/issues/140 .  The problem is that
+-- older GHC versions (<= 7.10) have a bug where they expect type
+-- variables in expressions to be in scope.
+tyVarsToAny :: Data a => a -> a
+tyVarsToAny = everywhere (id `extT` modifyType)
   where
-    modifyType (VarT _) = TupleT 0
+    modifyType (VarT _) = ConT ''Any
     modifyType ty = ty
 
 -- | Useful function for defining 'Instantiator' instances. It uses
