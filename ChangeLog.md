@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 0.2.3.1
+
+* Compatibility with GHC-8.8
+
 ## 0.2.3.0
 
 * Improved fix to the type variable behavior with GHC <= 7.10.  Uses
