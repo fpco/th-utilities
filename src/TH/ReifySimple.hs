@@ -61,6 +61,9 @@ import qualified Data.Map as M
 import           Data.Typeable (Typeable)
 import           GHC.Generics (Generic)
 import           Language.Haskell.TH
+#if MIN_VERSION_template_haskell(2,16,0)
+                                     hiding (reifyType)
+#endif
 import           Language.Haskell.TH.Instances ()
 import           TH.Utilities
 
