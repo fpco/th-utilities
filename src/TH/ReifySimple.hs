@@ -320,9 +320,9 @@ conToDataCons = \case
             DataCon name (tvs0 ++ map tyVarBndrName tvs) (preds0 ++ preds) fields) (conToDataCons con)
 #if MIN_VERSION_template_haskell(2,11,0)
     GadtC ns slots _ ->
-        map (\n -> DataCon n [] [] (map (\(_, ty) -> (Nothing, ty)) slots)) ns
+        map (\dn -> DataCon dn [] [] (map (\(_, ty) -> (Nothing, ty)) slots)) ns
     RecGadtC ns fields _ ->
-        map (\n -> DataCon n [] [] (map (\(n, _, ty) -> (Just n, ty)) fields)) ns
+        map (\dn -> DataCon dn [] [] (map (\(fn, _, ty) -> (Just fn, ty)) fields)) ns
 #endif
 
 -- | Like 'reifyDataType', but takes a 'Type' instead of just the 'Name'
