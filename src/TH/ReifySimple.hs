@@ -260,34 +260,29 @@ infoToTypeFamily info = case info of
     FamilyI (ClosedTypeFamilyD (TypeFamilyHead name tvs _result _injectivity) eqns) _ ->
         Just $ TypeFamily name (map tyVarBndrName tvs) $ map (goEqn name) eqns
     FamilyI (OpenTypeFamilyD (TypeFamilyHead name tvs _result _injectivity)) insts ->
-        Just $ TypeFamily name (map tyVarBndrName tvs) $ map go insts
+        Just $ TypeFamily name (map tyVarBndrName tvs) $ map (goInst name) insts
 #else
     FamilyI (ClosedTypeFamilyD name tvs _kind eqns) [] ->
         Just $ TypeFamily name (map tyVarBndrName tvs) $ map (goEqn name) eqns
     FamilyI (FamilyD TypeFam name tvs _kind) insts ->
-        Just $ TypeFamily name (map tyVarBndrName tvs) $ map go insts
+        Just $ TypeFamily name (map tyVarBndrName tvs) $ map (goInst name) insts
 #endif
     _ -> Nothing
   where
 #if MIN_VERSION_template_haskell(2,15,0)
-    goEqn _ (TySynEqn _ lhs ty)
-      | ConT name:params <- unAppsT lhs
-      = TypeInst name params ty
-      | otherwise
-      = error $ "Unexpected type family instance head: " ++ pprint lhs
+    toParams ps (AppT ty p) = toParams (p : ps) ty
+    toParams ps (AppKindT ty _) = toParams ps ty
+    toParams ps _ = ps
+    goEqn name (TySynEqn _ lty rty) = TypeInst name (toParams [] lty) rty
+    goInst name (TySynInstD eqn) = goEqn name eqn
+    goInst _ info' = error $
+        "Unexpected instance in FamilyI in infoToTypeInsts:\n" ++ pprint info'
 #else
     goEqn name (TySynEqn params ty) = TypeInst name params ty
-#endif
-
-#if MIN_VERSION_template_haskell(2,15,0)
-    go (TySynInstD (TySynEqn _ lhs ty))
-      | ConT name:params <- unAppsT lhs
-      = TypeInst name params ty
-#else
-    go (TySynInstD name (TySynEqn params ty)) = TypeInst name params ty
-#endif
-    go info' = error $
+    goInst name (TySynInstD _ eqn) = goEqn name eqn
+    goInst _ info' = error $
         "Unexpected instance in FamilyI in infoToTypeInsts:\n" ++ pprint info'
+#endif
 
 infoToDataCon :: Info -> Maybe DataCon
 infoToDataCon info = case info of
