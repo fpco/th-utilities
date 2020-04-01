@@ -1,5 +1,13 @@
 # ChangeLog
 
+## 0.2.4.0
+
+* Compatibility with GHC-8.10
+
+* Behavior change in reification of type family instances. Instead of
+  erroring if the instance mentions a kind variable, now just ignores
+  it.
+
 ## 0.2.3.1
 
 * Compatibility with GHC-8.8
