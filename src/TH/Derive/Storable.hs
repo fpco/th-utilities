@@ -54,7 +54,7 @@ makeStorableImpl preds headTy cons = do
     pokeMethod <- pokeExpr
     let methods =
             [ FunD (mkName "alignment") [Clause [WildP] (NormalB alignmentMethod) []]
-            , FunD (mkName "sizeOf") [Clause [WildP] (NormalB sizeOfMethod) []]
+            , FunD (mkName "sizeOf") [Clause [] (NormalB sizeOfMethod) []]
             , FunD (mkName "peek") [Clause [VarP ptrName] (NormalB peekMethod) []]
             , FunD (mkName "poke") [Clause [VarP ptrName, VarP valName] (NormalB pokeMethod) []]
             ]
@@ -81,7 +81,7 @@ makeStorableImpl preds headTy cons = do
     -- [[Int]] expression, where the inner lists are the sizes of the
     -- fields. Each member of the outer list corresponds to a different
     -- constructor.
-    sizeExpr = appE (varE 'maximum) $
+    sizeExpr = appE (varE 'const) $ appE (varE 'maximum) $
         listE [ appE (varE 'sum) (listE [sizeOfExpr ty | (_, ty) <- fields])
               | (DataCon _ _ _ fields) <- cons
               ]

@@ -1,5 +1,12 @@
 # ChangeLog
 
+## 0.2.4.1
+
+* Fixes generated Storable instances to have a `sizeOf` definition
+  which works with `-XStrict`. See [#13][]
+
+[#13]: https://github.com/fpco/th-utilities/issues/1
+
 ## 0.2.4.0
 
 * Compatibility with GHC-8.10
