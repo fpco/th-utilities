@@ -13,11 +13,11 @@ import Data.Data
 import Data.Generics
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax
+import Language.Haskell.TH.Datatype.TyVarBndr (TyVarBndr_, tvName)
 
 -- | Get the 'Name' of a 'TyVarBndr'
-tyVarBndrName :: TyVarBndr -> Name
-tyVarBndrName (PlainTV n) = n
-tyVarBndrName (KindedTV n _) = n
+tyVarBndrName :: TyVarBndr_ flag -> Name
+tyVarBndrName = tvName
 
 appsT :: Type -> [Type] -> Type
 appsT x [] = x
