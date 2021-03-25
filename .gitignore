@@ -16,3 +16,4 @@ cabal.sandbox.config
 *.hp
 .stack-work/
 *.yaml.lock
+stack-9.yaml
