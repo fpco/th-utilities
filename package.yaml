@@ -22,7 +22,7 @@ dependencies:
   - syb
   - template-haskell >= 2.7
   - text
-  - th-abstraction
+  - th-abstraction >= 0.4
   - th-orphans
 
 library:
