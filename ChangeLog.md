@@ -1,5 +1,12 @@
 # ChangeLog
 
+## 0.2.4.3
+
+* Adds a lower bound for `th-abstraction` dependency. Also released as
+  a hackage revision of `0.2.4.2`.  See [#15][]
+
+[#15]: https://github.com/fpco/th-utilities/issues/15
+
 ## 0.2.4.2
 
 * Fixes compilation with `GHC-9.0.*`.  See [#14][]
