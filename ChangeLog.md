@@ -1,4 +1,7 @@
 # ChangeLog
+## ???
+
+* Added `tupT` and `promotedTupT`.
 
 ## 0.2.4.3
 

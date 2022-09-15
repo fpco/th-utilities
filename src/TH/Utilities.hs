@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -9,11 +10,13 @@
 -- packages in the th-utilities repo and elsewhere.
 module TH.Utilities where
 
+import Control.Monad (foldM)
 import Data.Data
 import Data.Generics
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax
 import Language.Haskell.TH.Datatype.TyVarBndr (TyVarBndr_, tvName)
+import TH.FixQ (fixQ)
 
 -- | Get the 'Name' of a 'TyVarBndr'
 tyVarBndrName :: TyVarBndr_ flag -> Name
@@ -31,6 +34,46 @@ unAppsT = go []
   where
     go xs (AppT l x) = go (x : xs) l
     go xs ty = ty : xs
+
+-- | Given a list of types, produce the type of a tuple of
+-- those types. This is analogous to 'tupE' and 'tupP'.
+--
+-- @
+-- tupT [[t|Int|], [t|Char|], [t|Bool]] = [t| (Int, Char, Bool) |]
+-- @
+--
+-- @since FIXME
+tupT :: [Q Type] -> Q Type
+tupT ts = do
+  -- We build the expression with a thunk inside that will be filled in with
+  -- the length of the list once that's been determined. This works
+  -- efficiently (in one pass) because TH.Type is rather lazy.
+  (res, !_n) <- fixQ (\ ~(_res, n) -> foldM go (TupleT n, 0) ts)
+  pure res
+  where
+    go (acc, !k) ty = do
+      ty' <- ty
+      pure (acc `AppT` ty', k + 1)
+
+-- | Given a list of types, produce the type of a promoted tuple of
+-- those types. This is analogous to 'tupE' and 'tupP'.
+--
+-- @
+-- promotedTupT [[t|3|], [t| 'True|], [t|Bool]] = [t| '(3, 'True, Bool) |]
+-- @
+--
+-- @since FIXME
+promotedTupT :: [Q Type] -> Q Type
+promotedTupT ts = do
+  -- We build the expression with a thunk inside that will be filled in with
+  -- the length of the list once that's been determined. This works
+  -- efficiently (in one pass) because TH.Type is rather lazy.
+  (res, !_n) <- fixQ (\ ~(_res, n) -> foldM go (PromotedTupleT n, 0) ts)
+  pure res
+  where
+    go (acc, !k) ty = do
+      ty' <- ty
+      pure (acc `AppT` ty', k + 1)
 
 -- | Given a 'Type', returns a 'Just' value if it's a named type
 -- constructor applied to arguments. This value contains the name of the
