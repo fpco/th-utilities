@@ -1,7 +1,11 @@
 # ChangeLog
-## ???
 
-* Added `tupT` and `promotedTupT`.
+## 0.2.5.0
+
+* Adds `tupT` and `promotedTupT`.
+
+* Adds `TH.FixQ.fixQ`, a compatibility shim to provide fixQ for
+  `template-haskell <= 2.17` (`ghc <= 9.0.1`).
 
 ## 0.2.4.3
 
