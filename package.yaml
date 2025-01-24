@@ -35,6 +35,7 @@ tests:
     source-dirs: test
     main: Main.hs
     dependencies:
+      - th-lift
       - th-utilities
       - hspec
       - vector
