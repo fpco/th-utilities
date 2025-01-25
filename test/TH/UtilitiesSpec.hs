@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE PolyKinds #-}
@@ -31,8 +32,10 @@ spec = do
       tr (Proxy @()) `shouldReturn` $(lift =<< [t| () |])
     it "42" $ do
       tr (Proxy @42) `shouldReturn` $(lift =<< [t| 42 |])
+#if MIN_VERSION_template_haskell(2,17,0)
     it "'c'" $ do
       tr (Proxy @'c') `shouldReturn` $(lift =<< [t| 'c' |])
+#endif
     it "str" $ do
       tr (Proxy @"hello \"world") `shouldReturn` $(lift =<< [t| "hello \"world" |])
   where

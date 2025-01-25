@@ -18,6 +18,7 @@ import Data.Generics
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax
 import Language.Haskell.TH.Datatype.TyVarBndr (TyVarBndr_, tvName)
+import Text.Read (readMaybe)
 import TH.FixQ (fixQ)
 
 -- | Get the 'Name' of a 'TyVarBndr'
@@ -187,8 +188,12 @@ typeRepToType tr = do
           | modName == typeLitsMod =
               case tyConName con of
                 s@('"':_) -> LitT . StrTyLit $ read s
+#if MIN_VERSION_template_haskell(2,17,0)
                 ['\'', c, '\''] -> LitT $ CharTyLit c
-                n -> LitT . NumTyLit $ read n
+#endif
+                s -> case readMaybe s of
+                    Just n -> LitT $ NumTyLit n
+                    _ -> error $ "Unrecognized type literal name: " ++ s
           | otherwise = ConT $ name (tyConPackage con) modName conName
     resultArgs <- mapM typeRepToType args
     return (appsT t resultArgs)
