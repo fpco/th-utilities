@@ -1,5 +1,12 @@
 # ChangeLog
 
+## 0.2.5.1
+
+* `typeRepToType` now supports type literals, tuples and lists. See
+  [#18][]
+
+[#18]: https://github.com/fpco/th-utilities/pull/18
+
 ## 0.2.5.0
 
 * Adds `tupT` and `promotedTupT`.
