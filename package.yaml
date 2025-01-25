@@ -20,7 +20,7 @@ dependencies:
   - filepath
   - primitive
   - syb
-  - template-haskell >= 2.7
+  - template-haskell >= 2.8
   - text
   - th-abstraction >= 0.4
   - th-orphans
