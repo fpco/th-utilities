@@ -1,6 +1,8 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE RankNTypes #-}
@@ -177,9 +179,25 @@ fromPlainInstanceD _ = Nothing
 typeRepToType :: TypeRep -> Q Type
 typeRepToType tr = do
     let (con, args) = splitTyConApp tr
-        name = Name (OccName (tyConName con)) (NameG TcClsName (PkgName (tyConPackage con)) (ModName (tyConModule con)))
+        modName = tyConModule con
+        name pn mn cn = Name (OccName cn) (NameG TcClsName (PkgName pn) (ModName mn))
+        conName = tyConName con
+        t | modName == tupleMod = TupleT $ length args
+          | modName == listMod && conName == listCon = ListT
+          | modName == typeLitsMod =
+              case tyConName con of
+                s@('"':_) -> LitT . StrTyLit $ read s
+                ['\'', c, '\''] -> LitT $ CharTyLit c
+                n -> LitT . NumTyLit $ read n
+          | otherwise = ConT $ name (tyConPackage con) modName conName
     resultArgs <- mapM typeRepToType args
-    return (appsT (ConT name) resultArgs)
+    return (appsT t resultArgs)
+  where
+    typeLitsMod = tyConModule . typeRepTyCon . typeRep $ Proxy @42
+    tupleMod = tyConModule . typeRepTyCon . typeRep $ Proxy @((), ())
+    listMod = tyConModule . typeRepTyCon . typeRep $ Proxy @[()]
+    listCon = tyConName . typeRepTyCon . typeRep $ Proxy @[()]
+
 
 -- | Hack to enable putting expressions inside 'lift'-ed TH data. For
 -- example, you could do

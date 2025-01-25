@@ -17,3 +17,4 @@ cabal.sandbox.config
 .stack-work/
 *.yaml.lock
 stack-9.yaml
+/dist-newstyle
