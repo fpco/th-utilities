@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 0.2.5.2
+
+* Fixes build with ghc-9.0 (`template-haskell-2.17`)
+
 ## 0.2.5.1
 
 * `typeRepToType` now supports type literals, tuples and lists. See
