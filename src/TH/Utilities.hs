@@ -188,7 +188,7 @@ typeRepToType tr = do
           | modName == typeLitsMod =
               case tyConName con of
                 s@('"':_) -> LitT . StrTyLit $ read s
-#if MIN_VERSION_template_haskell(2,17,0)
+#if MIN_VERSION_template_haskell(2,18,0)
                 ['\'', c, '\''] -> LitT $ CharTyLit c
 #endif
                 s -> case readMaybe s of
